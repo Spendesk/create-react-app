@@ -20,6 +20,7 @@ const host = process.env.HOST || '0.0.0.0';
 
 module.exports = function(proxy, allowedHost) {
   return {
+    sockHost: `localhost:${process.env.PORT || 8080}`,
     // WebpackDevServer 2.4.3 introduced a security fix that prevents remote
     // websites from potentially accessing local content through DNS rebinding:
     // https://github.com/webpack/webpack-dev-server/issues/887
@@ -90,6 +91,11 @@ module.exports = function(proxy, allowedHost) {
     host,
     overlay: false,
     historyApiFallback: {
+      rewrites: process.env.ENTRIES.split(',').map(entry => {
+        const [name] = entry.split(':');
+
+        return { from: new RegExp(`^\\/${name}`), to: `/${name}.html` };
+      }),
       // Paths with dots should still use the history fallback.
       // See https://github.com/facebook/create-react-app/issues/387.
       disableDotRule: true,

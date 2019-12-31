@@ -12,6 +12,7 @@ const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
 const resolve = require('resolve');
+const merge = require('lodash.merge');
 const PnpWebpackPlugin = require('pnp-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
@@ -33,7 +34,6 @@ const ModuleNotFoundPlugin = require('@dev-spendesk/react-dev-utils/ModuleNotFou
 const ForkTsCheckerWebpackPlugin = require('@dev-spendesk/react-dev-utils/ForkTsCheckerWebpackPlugin');
 const typescriptFormatter = require('@dev-spendesk/react-dev-utils/typescriptFormatter');
 // @remove-on-eject-begin
-const eslint = require('eslint');
 const getCacheIdentifier = require('@dev-spendesk/react-dev-utils/getCacheIdentifier');
 // @remove-on-eject-end
 const postcssNormalize = require('postcss-normalize');
@@ -58,6 +58,12 @@ const cssRegex = /\.css$/;
 const cssModuleRegex = /\.module\.css$/;
 const sassRegex = /\.(scss|sass)$/;
 const sassModuleRegex = /\.module\.(scss|sass)$/;
+
+const appConfig = merge(
+  {},
+  require(path.join(paths.appConfig, 'production')),
+  require(path.join(paths.appConfig, `${process.env.STAGE || 'production'}`))
+);
 
 // This is the production and development configuration.
 // It is focused on developer experience, fast rebuilds, and a minimal bundle.
@@ -157,25 +163,22 @@ module.exports = function(webpackEnv) {
       : isEnvDevelopment && 'cheap-module-source-map',
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.
-    entry: [
-      // Include an alternative client for WebpackDevServer. A client's job is to
-      // connect to WebpackDevServer by a socket and get notified about changes.
-      // When you save a file, the client will either apply hot updates (in case
-      // of CSS changes), or refresh the page (in case of JS changes). When you
-      // make a syntax error, this client will display a syntax error overlay.
-      // Note: instead of the default WebpackDevServer client, we use a custom one
-      // to bring better experience for Create React App users. You can replace
-      // the line below with these two lines if you prefer the stock client:
-      // require.resolve('webpack-dev-server/client') + '?/',
-      // require.resolve('webpack/hot/dev-server'),
-      isEnvDevelopment &&
-        require.resolve('@dev-spendesk/react-dev-utils/webpackHotDevClient'),
-      // Finally, this is your app's code:
-      paths.appIndexJs,
-      // We include the app code last so that if there is a runtime error during
-      // initialization, it doesn't blow up the WebpackDevServer client, and
-      // changing JS code would still trigger a refresh.
-    ].filter(Boolean),
+    entry: Object.fromEntries(
+      process.env.ENTRIES.split(',').map(entry => {
+        const [name, entryPath] = entry.split(':');
+
+        return [
+          name,
+          [
+            isEnvDevelopment &&
+              require.resolve(
+                '@dev-spendesk/react-dev-utils/webpackHotDevClient'
+              ),
+            entryPath,
+          ].filter(Boolean),
+        ];
+      })
+    ),
     output: {
       // The build folder.
       path: isEnvProduction ? paths.appBuild : undefined,
@@ -184,8 +187,8 @@ module.exports = function(webpackEnv) {
       // There will be one main bundle, and one file per asynchronous chunk.
       // In development, it does not produce real files.
       filename: isEnvProduction
-        ? 'static/js/[name].[contenthash:8].js'
-        : isEnvDevelopment && 'static/js/bundle.js',
+        ? 'static/js/[name].js'
+        : isEnvDevelopment && 'static/js/[name].js',
       // TODO: remove this when upgrading to webpack 5
       futureEmitAssets: true,
       // There are also additional JS chunk files if you use code splitting.
@@ -194,7 +197,9 @@ module.exports = function(webpackEnv) {
         : isEnvDevelopment && 'static/js/[name].chunk.js',
       // We inferred the "public path" (such as / or /my-project) from homepage.
       // We use "/" in development.
-      publicPath: publicPath,
+      publicPath: isEnvDevelopment
+        ? `http://localhost:${process.env.PORT || 8080}/`
+        : publicPath,
       // Point sourcemap entries to original disk location (format as URL on Windows)
       devtoolModuleFilenameTemplate: isEnvProduction
         ? info =>
@@ -314,6 +319,7 @@ module.exports = function(webpackEnv) {
           'react-dom$': 'react-dom/profiling',
           'scheduler/tracing': 'scheduler/tracing-profiling',
         }),
+        'react-dom': '@hot-loader/react-dom',
         ...(modules.webpackAliases || {}),
       },
       plugins: [
@@ -341,50 +347,6 @@ module.exports = function(webpackEnv) {
         // Disable require.ensure as it's not a standard language feature.
         { parser: { requireEnsure: false } },
 
-        // First, run the linter.
-        // It's important to do this before Babel processes the JS.
-        {
-          test: /\.(js|mjs|jsx|ts|tsx)$/,
-          enforce: 'pre',
-          use: [
-            {
-              options: {
-                cache: true,
-                formatter: require.resolve(
-                  '@dev-spendesk/react-dev-utils/eslintFormatter'
-                ),
-                eslintPath: require.resolve('eslint'),
-                resolvePluginsRelativeTo: __dirname,
-                // @remove-on-eject-begin
-                ignore: process.env.EXTEND_ESLINT === 'true',
-                baseConfig: (() => {
-                  // We allow overriding the config only if the env variable is set
-                  if (process.env.EXTEND_ESLINT === 'true') {
-                    const eslintCli = new eslint.CLIEngine();
-                    let eslintConfig;
-                    try {
-                      eslintConfig = eslintCli.getConfigForFile(
-                        paths.appIndexJs
-                      );
-                    } catch (e) {
-                      console.error(e);
-                      process.exit(1);
-                    }
-                    return eslintConfig;
-                  } else {
-                    return {
-                      extends: [require.resolve('eslint-config-react-app')],
-                    };
-                  }
-                })(),
-                useEslintrc: false,
-                // @remove-on-eject-end
-              },
-              loader: require.resolve('eslint-loader'),
-            },
-          ],
-          include: paths.appSrc,
-        },
         {
           // "oneOf" will traverse all following loaders until one will
           // match the requirements. When no loader matches it will fall
@@ -405,7 +367,7 @@ module.exports = function(webpackEnv) {
             // The preset includes JSX, Flow, TypeScript, and some ESnext features.
             {
               test: /\.(js|mjs|jsx|ts|tsx)$/,
-              include: paths.appSrc,
+              include: process.env.BABEL_INCLUDE.split(','),
               loader: require.resolve('babel-loader'),
               options: {
                 customize: require.resolve(
@@ -434,6 +396,7 @@ module.exports = function(webpackEnv) {
                 // @remove-on-eject-end
                 plugins: [
                   [
+                    require.resolve('react-hot-loader/babel'),
                     require.resolve('babel-plugin-named-asset-import'),
                     {
                       loaderMap: {
@@ -582,32 +545,18 @@ module.exports = function(webpackEnv) {
       ],
     },
     plugins: [
-      // Generates an `index.html` file with the <script> injected.
-      new HtmlWebpackPlugin(
-        Object.assign(
-          {},
-          {
-            inject: true,
-            template: paths.appHtml,
-          },
-          isEnvProduction
-            ? {
-                minify: {
-                  removeComments: true,
-                  collapseWhitespace: true,
-                  removeRedundantAttributes: true,
-                  useShortDoctype: true,
-                  removeEmptyAttributes: true,
-                  removeStyleLinkTypeAttributes: true,
-                  keepClosingSlash: true,
-                  minifyJS: true,
-                  minifyCSS: true,
-                  minifyURLs: true,
-                },
-              }
-            : undefined
-        )
-      ),
+      ...process.env.ENTRIES.split(',').map(entry => {
+        const [name] = entry.split(':');
+
+        return [
+          new HtmlWebpackPlugin({
+            template: path.join(__dirname, `public/${name}.html`),
+            filename: `${name}.html`,
+            chunks: [name],
+            inject: 'body',
+          }),
+        ];
+      }),
       // Inlines the webpack runtime script. This script is too small to warrant
       // a network request.
       // https://github.com/facebook/create-react-app/issues/5358
@@ -630,6 +579,10 @@ module.exports = function(webpackEnv) {
       // during a production build.
       // Otherwise React will be compiled in the very slow development mode.
       new webpack.DefinePlugin(env.stringified),
+      new webpack.DefinePlugin({
+        appConfig: JSON.stringify(appConfig),
+      }),
+      new webpack.EnvironmentPlugin(['STAGE']),
       // This is necessary to emit hot updates (currently CSS only):
       isEnvDevelopment && new webpack.HotModuleReplacementPlugin(),
       // Watcher doesn't work well if you mistype casing in a path so we use
