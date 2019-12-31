@@ -270,8 +270,8 @@ module.exports = function(webpackEnv) {
               : false,
           },
           cssProcessorPluginOptions: {
-              preset: ['default', { minifyFontValues: { removeQuotes: false } }]
-          }
+            preset: ['default', { minifyFontValues: { removeQuotes: false } }],
+          },
         }),
       ],
       // Automatically split vendor and commons
@@ -661,8 +661,12 @@ module.exports = function(webpackEnv) {
             manifest[file.name] = file.path;
             return manifest;
           }, seed);
-          const entrypointFiles = entrypoints.main.filter(
-            fileName => !fileName.endsWith('.map')
+          const entrypointFiles = Object.entries(entrypoints).reduce(
+            (out, [name, allFiles]) => ({
+              ...out,
+              [name]: allFiles.filter(fileName => !fileName.endsWith('.map')),
+            }),
+            {}
           );
 
           return {
