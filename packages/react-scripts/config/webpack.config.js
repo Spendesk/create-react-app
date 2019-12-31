@@ -174,7 +174,7 @@ module.exports = function(webpackEnv) {
               require.resolve(
                 '@dev-spendesk/react-dev-utils/webpackHotDevClient'
               ),
-            entryPath,
+            path.join(paths.appSrc, entryPath),
           ].filter(Boolean),
         ];
       })
@@ -551,7 +551,7 @@ module.exports = function(webpackEnv) {
         const [name] = entry.split(':');
 
         return new HtmlWebpackPlugin({
-          template: path.join(__dirname, `public/${name}.html`),
+          template: path.join(paths.appPublic, `${name}.html`),
           filename: `${name}.html`,
           chunks: [name],
           inject: 'body',
