@@ -89,6 +89,11 @@ module.exports = function(proxy, allowedHost) {
     // Enable HTTPS if the HTTPS environment variable is set to 'true'
     https: protocol === 'https',
     host,
+    // Allow all origins because we load the app via a custom local domain in
+    // dev and we don't care about security in dev anyway, YOLO
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+    },
     overlay: false,
     historyApiFallback: {
       rewrites: process.env.ENTRIES.split(',').map(entry => {

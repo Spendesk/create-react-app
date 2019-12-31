@@ -397,8 +397,8 @@ module.exports = function(webpackEnv) {
                 ),
                 // @remove-on-eject-end
                 plugins: [
+                  require.resolve('react-hot-loader/babel'),
                   [
-                    require.resolve('react-hot-loader/babel'),
                     require.resolve('babel-plugin-named-asset-import'),
                     {
                       loaderMap: {
