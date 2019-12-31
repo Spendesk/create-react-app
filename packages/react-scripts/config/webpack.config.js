@@ -550,14 +550,12 @@ module.exports = function(webpackEnv) {
       ...process.env.ENTRIES.split(',').map(entry => {
         const [name] = entry.split(':');
 
-        return [
-          new HtmlWebpackPlugin({
-            template: path.join(__dirname, `public/${name}.html`),
-            filename: `${name}.html`,
-            chunks: [name],
-            inject: 'body',
-          }),
-        ];
+        return new HtmlWebpackPlugin({
+          template: path.join(__dirname, `public/${name}.html`),
+          filename: `${name}.html`,
+          chunks: [name],
+          inject: 'body',
+        });
       }),
       // Inlines the webpack runtime script. This script is too small to warrant
       // a network request.
