@@ -1,6 +1,6 @@
 {
   "name": "@dev-spendesk/react-scripts",
-  "version": "3.3.1",
+  "version": "3.3.1-custom",
   "description": "Configuration and scripts for Create React App.",
   "repository": {
     "type": "git",
