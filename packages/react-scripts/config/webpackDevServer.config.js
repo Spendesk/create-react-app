@@ -102,6 +102,12 @@ module.exports = function(proxy, allowedHost) {
     host,
     overlay: false,
     historyApiFallback: {
+      // Redirect each entrypoint to its corresponding generated HTML entry
+      rewrites: process.env.ENTRIES.split(',').map(entry => {
+        const [name] = entry.split(':');
+
+        return { from: new RegExp(`^\\/${name}`), to: `/${name}.html` };
+      }),
       // Paths with dots should still use the history fallback.
       // See https://github.com/facebook/create-react-app/issues/387.
       disableDotRule: true,

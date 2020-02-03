@@ -1,3 +1,34 @@
+# ⚠️ This is a custom fork of Create React App ⚠️
+
+We maintain this fork to enhance/override/customize CRA to our needs. So far, the scope of our changes only affects the `react-scripts` package.
+
+Please note that we're ahead of the published versions of the individual CRA packages because we override on top of the upstream `master` branch. This allows us to benefit from new features and bug fixes from the source faster than using the published versions, at the cost of running into potential issues faster as well.
+
+## Features & changes we maintain against the source
+
+- Support for injecting a stage-based config and exposing it as a global `appConfig` variable.
+- Support for multiple entrypoints and generation of individual HTML entries for each one of them using the `ENTRIES` env variable.
+- Support for injecting a `process.env.STAGE` variable.
+- Stable static output file names based on entrypoints names instead of contenhash based file names.
+- Support for react-hot-loader.
+- Complete removal of ESLint.
+- Only execute test files matching the `'<rootDir>/src/**/__tests__/**/*.test.{js,jsx,ts,tsx}'` RegEx.
+- Support for Babel processing of files outside the src folder via the `BABEL_INCLUDE` env variable.
+
+## Local development
+
+To check your changes work locally, you can use the `yarn add --dev file:path/to/your/custom/react-scripts` command in another repository.
+
+## Versioning and publishing
+
+The forked version is published to our npm org.
+
+We suffix our altered versions with `-custom` (or `custom-2`, `custom-3` if we have multiple patched versions published on top of the same original source version).
+
+Normally, we only alter the `react-scripts` package, which means we only need to publish this package and not the others.
+
+**TODO**: document how to publish
+
 # Create React App [![Build Status](https://dev.azure.com/facebook/create-react-app/_apis/build/status/facebook.create-react-app?branchName=master)](https://dev.azure.com/facebook/create-react-app/_build/latest?definitionId=1&branchName=master) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-green.svg)](https://github.com/facebook/create-react-app/blob/master/CONTRIBUTING.md)
 
 Create React apps with no build configuration.
@@ -16,6 +47,7 @@ npx create-react-app my-app
 cd my-app
 npm start
 ```
+
 If you've previously installed `create-react-app` globally via `npm install -g create-react-app`, we recommend you uninstall the package using `npm uninstall -g create-react-app` to ensure that npx always uses the latest version.
 
 _([npx](https://medium.com/@maybekatz/introducing-npx-an-npm-package-runner-55f7d4bd282b) comes with npm 5.2+ and higher, see [instructions for older npm versions](https://gist.github.com/gaearon/4064d3c23a77c74a3614c498a8bb1c5f))_
