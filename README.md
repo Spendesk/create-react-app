@@ -4,9 +4,7 @@ We maintain this fork to enhance/override/customize CRA to our needs. So far, th
 
 ## Features & changes we maintain against the source
 
-- Support for injecting a stage-based config and exposing it as a global `appConfig` variable.
 - Support for multiple entrypoints and generation of individual HTML entries for each one of them using the `ENTRIES` env variable.
-- Support for injecting a `process.env.STAGE` variable.
 - Stable static output file names based on entrypoints names instead of contenhash based file names.
 - Support for react-hot-loader.
 - Complete removal of ESLint.

@@ -61,13 +61,6 @@ const cssModuleRegex = /\.module\.css$/;
 const sassRegex = /\.(scss|sass)$/;
 const sassModuleRegex = /\.module\.(scss|sass)$/;
 
-// Prepare appConfig: merge production one with the current stage one
-const appConfig = merge(
-  {},
-  require(path.join(paths.appConfig, 'production')),
-  require(path.join(paths.appConfig, `${process.env.STAGE || 'production'}`))
-);
-
 // This is the production and development configuration.
 // It is focused on developer experience, fast rebuilds, and a minimal bundle.
 module.exports = function(webpackEnv) {
@@ -589,12 +582,6 @@ module.exports = function(webpackEnv) {
       // during a production build.
       // Otherwise React will be compiled in the very slow development mode.
       new webpack.DefinePlugin(env.stringified),
-      // Expose the `appConfig` global variable to the app code
-      new webpack.DefinePlugin({
-        appConfig: JSON.stringify(appConfig),
-      }),
-      // Attach and expose a custom `STAGE` property to `process.env`
-      new webpack.EnvironmentPlugin(['STAGE']),
       // This is necessary to emit hot updates (currently CSS only):
       isEnvDevelopment && new webpack.HotModuleReplacementPlugin(),
       // Watcher doesn't work well if you mistype casing in a path so we use
