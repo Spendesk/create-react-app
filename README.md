@@ -9,7 +9,6 @@ We maintain this fork to enhance/override/customize CRA to our needs. So far, th
 - Support for react-hot-loader.
 - Complete removal of ESLint.
 - Only execute test files matching the `'<rootDir>/src/**/__tests__/**/*.test.{js,jsx,ts,tsx}'` RegEx.
-- Support for Babel processing of files outside the src folder via the `BABEL_INCLUDE` env variable.
 
 ## Local development
 
