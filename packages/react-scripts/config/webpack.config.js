@@ -676,10 +676,14 @@ module.exports = function(webpackEnv) {
           // The formatter is invoked directly in WebpackDevServerUtils during development
           formatter: isEnvProduction ? typescriptFormatter : undefined,
         }),
+        new webpack.DefinePlugin({
+          global: 'window'		// Placeholder for global used in any node_modules
+       }),
     ].filter(Boolean),
     // Some libraries import Node modules but don't use them in the browser.
     // Tell webpack to provide empty mocks for them so importing them works.
     node: {
+      global: false,
       module: 'empty',
       dgram: 'empty',
       dns: 'mock',
