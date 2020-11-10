@@ -1,3 +1,43 @@
+# ⚠️ This is a custom fork of Create React App ⚠️
+
+We maintain this fork to enhance/override/customize CRA to our needs. So far, the scope of our changes only affects the `react-scripts` package.
+
+## Features & changes we maintain against the source
+
+- Support for multiple entrypoints and generation of individual HTML entries for each one of them using the `ENTRIES` env variable.
+- Stable static output file names based on entrypoints names instead of contenhash based file names.
+- Complete removal of ESLint.
+- Only execute test files matching the `'<rootDir>/src/**/__tests__/**/*.test.{js,jsx,ts,tsx}'` RegEx.
+
+## Local development
+
+To check your changes work locally, you can use the `yarn add --dev file:path/to/your/custom/react-scripts` command in another repository.
+
+## Updating from upstream
+
+This repository works with two remotes:
+
+- `origin`, pointing to our fork at [Spendesk/create-react-app](https://github.com/Spendesk/create-react-app)
+- `upstream`, pointing to the original source repository at [facebook/create-react-app](https://github.com/facebook/create-react-app)
+
+To get latest updates from the source and re-apply our changes on top:
+
+- `git fetch upstream`
+- `git checkout -b ${version} ${latest-tag}` (where `${latest-tag}` is the latest published tag on the source repository and `${version}` is the version number of this tag, for ex. if the latest tag is `v3.4.1`, the command should be `git checkout -b 3.4.1 v3.4.1`)
+- Apply the changes (most likely, you would use `git cherry-pick` to apply previous commits)
+- `git push -u` to push your branch
+- You can then go to the repository settings on GitHub and set this new branch as the default branch
+
+## Versioning and publishing
+
+The forked version is published to our npm org.
+
+We suffix our altered versions with `-custom` (or `custom-2`, `custom-3` if we have multiple patched versions published on top of the same original source version).
+
+Normally, we only alter the `react-scripts` package, which means we should only need to publish this package and not the others.
+
+The original CRA repository uses Yarn worskpaces and Lerna, but this gets on our way when we only want to try to publish one or two packages. So the simplest way to do it is to commit and push your changes, then `cd` into the `react-scripts` package and run `npm publish` there (you'll need first to have `npm login`, you'll find the credentials in our 1Password).
+
 # Create React App [![Build Status](https://dev.azure.com/facebook/create-react-app/_apis/build/status/facebook.create-react-app?branchName=master)](https://dev.azure.com/facebook/create-react-app/_build/latest?definitionId=1&branchName=master) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-green.svg)](https://github.com/facebook/create-react-app/blob/master/CONTRIBUTING.md)
 
 <img alt="Logo" align="right" src="https://create-react-app.dev/img/logo.svg" width="20%" />

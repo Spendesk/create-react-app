@@ -218,6 +218,11 @@ function verifyTypeScriptSetup() {
   if (appTsConfig.compilerOptions == null) {
     appTsConfig.compilerOptions = {};
     firstTimeSetup = true;
+  } else {
+    // #9429 & #9921
+    appTsConfig.compilerOptions = JSON.parse(
+      JSON.stringify(appTsConfig.compilerOptions)
+    );
   }
 
   for (const option of Object.keys(compilerOptions)) {
