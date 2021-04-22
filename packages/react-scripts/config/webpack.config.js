@@ -180,36 +180,36 @@ module.exports = function (webpackEnv) {
     // This means they will be the "root" imports that are included in JS bundle.
     entry: Object.fromEntries(
       // Create a new entry for all provided entrypoints
-      process.env.ENTRIES.split(',').map(entry => {
+      process.env.ENTRIES.split(',').map((entry) => {
         const [name, entryPath] = entry.split(':');
-        const entry = path.join(paths.appSrc, entryPath)
+        const entryPointFile = path.join(paths.appSrc, entryPath);
 
         return [
           name,
           isEnvDevelopment && !shouldUseReactRefresh
-          ? [
-              // Include an alternative client for WebpackDevServer. A client's job is to
-              // connect to WebpackDevServer by a socket and get notified about changes.
-              // When you save a file, the client will either apply hot updates (in case
-              // of CSS changes), or refresh the page (in case of JS changes). When you
-              // make a syntax error, this client will display a syntax error overlay.
-              // Note: instead of the default WebpackDevServer client, we use a custom one
-              // to bring better experience for Create React App users. You can replace
-              // the line below with these two lines if you prefer the stock client:
-              //
-              // require.resolve('webpack-dev-server/client') + '?/',
-              // require.resolve('webpack/hot/dev-server'),
-              //
-              // When using the experimental react-refresh integration,
-              // the webpack plugin takes care of injecting the dev client for us.
-              webpackDevClientEntry,
-              // Finally, this is your app's code:
-              entry,
-              // We include the app code last so that if there is a runtime error during
-              // initialization, it doesn't blow up the WebpackDevServer client, and
-              // changing JS code would still trigger a refresh.
-            ]
-          : entry,
+            ? [
+                // Include an alternative client for WebpackDevServer. A client's job is to
+                // connect to WebpackDevServer by a socket and get notified about changes.
+                // When you save a file, the client will either apply hot updates (in case
+                // of CSS changes), or refresh the page (in case of JS changes). When you
+                // make a syntax error, this client will display a syntax error overlay.
+                // Note: instead of the default WebpackDevServer client, we use a custom one
+                // to bring better experience for Create React App users. You can replace
+                // the line below with these two lines if you prefer the stock client:
+                //
+                // require.resolve('webpack-dev-server/client') + '?/',
+                // require.resolve('webpack/hot/dev-server'),
+                //
+                // When using the experimental react-refresh integration,
+                // the webpack plugin takes care of injecting the dev client for us.
+                webpackDevClientEntry,
+                // Finally, this is your app's code:
+                entryPointFile,
+                // We include the app code last so that if there is a runtime error during
+                // initialization, it doesn't blow up the WebpackDevServer client, and
+                // changing JS code would still trigger a refresh.
+              ]
+            : entryPointFile,
         ];
       })
     ),
@@ -233,12 +233,13 @@ module.exports = function (webpackEnv) {
       publicPath: paths.publicUrlOrPath,
       // Point sourcemap entries to original disk location (format as URL on Windows)
       devtoolModuleFilenameTemplate: isEnvProduction
-        ? info =>
+        ? (info) =>
             path
               .relative(paths.appSrc, info.absoluteResourcePath)
               .replace(/\\/g, '/')
         : isEnvDevelopment &&
-          (info => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/')),
+          ((info) =>
+            path.resolve(info.absoluteResourcePath).replace(/\\/g, '/')),
       // Prevents conflicts when multiple webpack runtimes (from different apps)
       // are used on the same page.
       jsonpFunction: `webpackJsonp${appPackageJson.name}`,
@@ -321,7 +322,7 @@ module.exports = function (webpackEnv) {
       // https://twitter.com/wSokra/status/969679223278505985
       // https://github.com/facebook/create-react-app/issues/5358
       runtimeChunk: {
-        name: entrypoint => `runtime-${entrypoint.name}`,
+        name: (entrypoint) => `runtime-${entrypoint.name}`,
       },
     },
     resolve: {
@@ -339,8 +340,8 @@ module.exports = function (webpackEnv) {
       // `web` extension prefixes have been added for better support
       // for React Native Web.
       extensions: paths.moduleFileExtensions
-        .map(ext => `.${ext}`)
-        .filter(ext => useTypeScript || !ext.includes('ts')),
+        .map((ext) => `.${ext}`)
+        .filter((ext) => useTypeScript || !ext.includes('ts')),
       alias: {
         // Support React Native Web
         // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
@@ -435,7 +436,6 @@ module.exports = function (webpackEnv) {
                 ),
                 // @remove-on-eject-end
                 plugins: [
-                  require.resolve('react-hot-loader/babel'),
                   [
                     require.resolve('babel-plugin-named-asset-import'),
                     {
@@ -605,7 +605,7 @@ module.exports = function (webpackEnv) {
     },
     plugins: [
       // Generate an HTML entry for each provided entries
-      ...process.env.ENTRIES.split(',').map(entry => {
+      ...process.env.ENTRIES.split(',').map((entry) => {
         const [name] = entry.split(':');
 
         // Generates an `index.html` file with the <script> injected.
@@ -688,7 +688,7 @@ module.exports = function (webpackEnv) {
           const entrypointFiles = Object.entries(entrypoints).reduce(
             (out, [name, allFiles]) => ({
               ...out,
-              [name]: allFiles.filter(fileName => !fileName.endsWith('.map')),
+              [name]: allFiles.filter((fileName) => !fileName.endsWith('.map')),
             }),
             {}
           );
@@ -749,9 +749,9 @@ module.exports = function (webpackEnv) {
           // The formatter is invoked directly in WebpackDevServerUtils during development
           formatter: isEnvProduction ? typescriptFormatter : undefined,
         }),
-        new webpack.DefinePlugin({
-          global: 'window'		// Placeholder for global used in any node_modules
-       }),
+      new webpack.DefinePlugin({
+        global: 'window', // Placeholder for global used in any node_modules
+      }),
     ].filter(Boolean),
     // Some libraries import Node modules but don't use them in the browser.
     // Tell webpack to provide empty mocks for them so importing them works.
