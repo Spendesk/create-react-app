@@ -12,7 +12,6 @@ const fs = require('fs');
 const path = require('path');
 const webpack = require('webpack');
 const resolve = require('resolve');
-const merge = require('lodash.merge');
 const PnpWebpackPlugin = require('pnp-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
@@ -117,7 +116,13 @@ module.exports = function (webpackEnv) {
       },
       {
         loader: require.resolve('css-loader'),
-        options: cssOptions,
+        options: {
+          ...cssOptions,
+          // Disabled for now
+          // a better way would be to move assets from public/* to src/*
+          // See https://github.com/facebook/create-react-app/issues/9870
+          url: false,
+        },
       },
       {
         // Options for PostCSS as we reference these options twice
@@ -604,6 +609,7 @@ module.exports = function (webpackEnv) {
               exclude: [/\.(js|mjs|jsx|ts|tsx)$/, /\.html$/, /\.json$/],
               options: {
                 name: 'static/media/[name].[hash:8].[ext]',
+                esModule: false,
               },
             },
             // ** STOP ** Are you adding a new loader?
@@ -617,30 +623,32 @@ module.exports = function (webpackEnv) {
       ...process.env.ENTRIES.split(',').map(entry => {
         const [name] = entry.split(':');
 
-        Object.assign(
-          {},
-          {
-            template: path.join(paths.appPublic, `${name}.html`),
-            filename: `${name}.html`,
-            chunks: [name],
-            inject: 'body',
-          },
-          isEnvProduction
-            ? {
-                minify: {
-                  removeComments: true,
-                  collapseWhitespace: true,
-                  removeRedundantAttributes: true,
-                  useShortDoctype: true,
-                  removeEmptyAttributes: true,
-                  removeStyleLinkTypeAttributes: true,
-                  keepClosingSlash: true,
-                  minifyJS: true,
-                  minifyCSS: true,
-                  minifyURLs: true,
-                },
-              }
-            : undefined
+        return new HtmlWebpackPlugin(
+          Object.assign(
+            {},
+            {
+              template: path.join(paths.appPublic, `${name}.html`),
+              filename: `${name}.html`,
+              chunks: [name],
+              inject: 'body',
+            },
+            isEnvProduction
+              ? {
+                  minify: {
+                    removeComments: true,
+                    collapseWhitespace: true,
+                    removeRedundantAttributes: true,
+                    useShortDoctype: true,
+                    removeEmptyAttributes: true,
+                    removeStyleLinkTypeAttributes: true,
+                    keepClosingSlash: true,
+                    minifyJS: true,
+                    minifyCSS: true,
+                    minifyURLs: true,
+                  },
+                }
+              : undefined
+          )
         );
       }),
       // Inlines the webpack runtime script. This script is too small to warrant
