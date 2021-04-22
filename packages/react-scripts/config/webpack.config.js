@@ -180,7 +180,7 @@ module.exports = function (webpackEnv) {
     // This means they will be the "root" imports that are included in JS bundle.
     entry: Object.fromEntries(
       // Create a new entry for all provided entrypoints
-      process.env.ENTRIES.split(',').map((entry) => {
+      process.env.ENTRIES.split(',').map(entry => {
         const [name, entryPath] = entry.split(':');
         const entryPointFile = path.join(paths.appSrc, entryPath);
 
@@ -233,13 +233,12 @@ module.exports = function (webpackEnv) {
       publicPath: paths.publicUrlOrPath,
       // Point sourcemap entries to original disk location (format as URL on Windows)
       devtoolModuleFilenameTemplate: isEnvProduction
-        ? (info) =>
+        ? info =>
             path
               .relative(paths.appSrc, info.absoluteResourcePath)
               .replace(/\\/g, '/')
         : isEnvDevelopment &&
-          ((info) =>
-            path.resolve(info.absoluteResourcePath).replace(/\\/g, '/')),
+          (info => path.resolve(info.absoluteResourcePath).replace(/\\/g, '/')),
       // Prevents conflicts when multiple webpack runtimes (from different apps)
       // are used on the same page.
       jsonpFunction: `webpackJsonp${appPackageJson.name}`,
@@ -322,7 +321,7 @@ module.exports = function (webpackEnv) {
       // https://twitter.com/wSokra/status/969679223278505985
       // https://github.com/facebook/create-react-app/issues/5358
       runtimeChunk: {
-        name: (entrypoint) => `runtime-${entrypoint.name}`,
+        name: entrypoint => `runtime-${entrypoint.name}`,
       },
     },
     resolve: {
@@ -340,8 +339,8 @@ module.exports = function (webpackEnv) {
       // `web` extension prefixes have been added for better support
       // for React Native Web.
       extensions: paths.moduleFileExtensions
-        .map((ext) => `.${ext}`)
-        .filter((ext) => useTypeScript || !ext.includes('ts')),
+        .map(ext => `.${ext}`)
+        .filter(ext => useTypeScript || !ext.includes('ts')),
       alias: {
         // Support React Native Web
         // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
@@ -352,7 +351,6 @@ module.exports = function (webpackEnv) {
           'scheduler/tracing': 'scheduler/tracing-profiling',
         }),
         ...(modules.webpackAliases || {}),
-        'react-dom': '@hot-loader/react-dom',
       },
       plugins: [
         // Adds support for installing with Plug'n'Play, leading to faster installs and adding
@@ -386,6 +384,17 @@ module.exports = function (webpackEnv) {
           // match the requirements. When no loader matches it will fall
           // back to the "file" loader at the end of the loader list.
           oneOf: [
+            // TODO: Merge this config once `image/avif` is in the mime-db
+            // https://github.com/jshttp/mime-db
+            {
+              test: [/\.avif$/],
+              loader: require.resolve('url-loader'),
+              options: {
+                limit: imageInlineSizeLimit,
+                mimetype: 'image/avif',
+                name: 'static/media/[name].[hash:8].[ext]',
+              },
+            },
             // "url" loader works like "file" loader except that it embeds assets
             // smaller than specified limit in bytes as data URLs to avoid requests.
             // A missing `test` is equivalent to a match.
@@ -605,16 +614,34 @@ module.exports = function (webpackEnv) {
     },
     plugins: [
       // Generate an HTML entry for each provided entries
-      ...process.env.ENTRIES.split(',').map((entry) => {
+      ...process.env.ENTRIES.split(',').map(entry => {
         const [name] = entry.split(':');
 
-        // Generates an `index.html` file with the <script> injected.
-        return new HtmlWebpackPlugin({
-          template: path.join(paths.appPublic, `${name}.html`),
-          filename: `${name}.html`,
-          chunks: [name],
-          inject: 'body',
-        });
+        Object.assign(
+          {},
+          {
+            template: path.join(paths.appPublic, `${name}.html`),
+            filename: `${name}.html`,
+            chunks: [name],
+            inject: 'body',
+          },
+          isEnvProduction
+            ? {
+                minify: {
+                  removeComments: true,
+                  collapseWhitespace: true,
+                  removeRedundantAttributes: true,
+                  useShortDoctype: true,
+                  removeEmptyAttributes: true,
+                  removeStyleLinkTypeAttributes: true,
+                  keepClosingSlash: true,
+                  minifyJS: true,
+                  minifyCSS: true,
+                  minifyURLs: true,
+                },
+              }
+            : undefined
+        );
       }),
       // Inlines the webpack runtime script. This script is too small to warrant
       // a network request.
@@ -688,7 +715,7 @@ module.exports = function (webpackEnv) {
           const entrypointFiles = Object.entries(entrypoints).reduce(
             (out, [name, allFiles]) => ({
               ...out,
-              [name]: allFiles.filter((fileName) => !fileName.endsWith('.map')),
+              [name]: allFiles.filter(fileName => !fileName.endsWith('.map')),
             }),
             {}
           );
